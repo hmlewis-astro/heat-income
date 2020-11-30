@@ -1,6 +1,7 @@
 # NPR Heat and Poverty Analysis
 
 _Code by Sean McMinn and Nick Underwood; additional reporting by Meg Anderson and Nora Eckert_
+_Additional cities added (Charlottesville, VA) by Hannah Lewis_
 
 To determine the link between heat and income in U.S. cities, NPR used NASA satellite imagery and U.S. Census American Community Survey data. An open-source computer program developed by NPR downloaded median household income data for census tracts in the 100 most populated American cities, as well as geographic boundaries for census tracts. NPR combined these data with TIGER/Line shapefiles of the cities.
 
@@ -32,7 +33,7 @@ Also in the `final` directory is a directory called `simpl`. This has .geojson f
 - `.sh mkfile.sh` (this will take a long time)
 
 Added: Python script to reproduce maps, similar to those show in the NPR article.
--`python heat-income-maps.py`
+- `python heat-income-maps.py`
 
 ## Caveats
 - There is a difference between poverty vs. low-income
