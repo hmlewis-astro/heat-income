@@ -24,20 +24,20 @@ else
 	echo "Begin $KEY"
 
 	## check if directory exists, if so delete and recreate
-	if [ -d ./data/output/analysis_out/$CITY ]; then
-		rm -rf ./data/output/analysis_out/$CITY
-	fi
+	#if [ -d ./data/output/analysis_out/$CITY ]; then
+		#rm -rf ./data/output/analysis_out/$CITY
+	#fi
 
-	if [ ! -d ./data/output/analysis_out/ ]; then
-		mkdir ./data/output/analysis_out/
-		mkdir ./data/output/analysis_out/final
-		mkdir ./data/output/analysis_out/final/simpl
-	fi
+	#if [ ! -d ./data/output/analysis_out/ ]; then
+		#mkdir ./data/output/analysis_out/
+		#mkdir ./data/output/analysis_out/final
+		#mkdir ./data/output/analysis_out/final/simpl
+	#fi
 
 
-	if [ ! -d ./data/output/analysis_out/$CITY ]; then
-		mkdir ./data/output/analysis_out/$CITY
-	fi
+	#if [ ! -d ./data/output/analysis_out/$CITY ]; then
+		#mkdir ./data/output/analysis_out/$CITY
+	#fi
 
 	#dissolve city polygons to one boundary
 	mapshaper $CITY_BOUNDARY -dissolve2 \
@@ -70,20 +70,16 @@ else
 	echo "A5 finished $KEY"
 
 	#Zonal stats. Make sure to run pip install rasterio rasterstats boto3
-	rio zonalstats  ./data/output/analysis_out/$CITY/a5_shapes.geojson \
-		-r $CITY_RASTER --stats "median" \
-		> ./data/output/analysis_out/$CITY/a6_stats.geojson
 	echo "A6 finished $KEY"
 
 	#filter out slivers
 	mapshaper ./data/output/analysis_out/$CITY/a6_stats.geojson \
-		-filter '_median != null'\
 		-o ./data/output/analysis_out/$CITY/a7_sliver.geojson
 	echo "A7 finished $KEY"
 
 	# convert spectral raidance => degrees kelvin
 	`python convert_kelvin.py ./data/output/analysis_out/$CITY/a7_sliver.geojson` 
-	echo "a8 finished $KEY"
+	echo "A8 finished $KEY"
 
 	#project back to wgs84 for visualization with D3
 	ogr2ogr ./data/output/analysis_out/$CITY/a9_final.geojson \

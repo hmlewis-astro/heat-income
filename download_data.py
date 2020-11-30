@@ -37,6 +37,7 @@ def main():
 		except Exception as e: print('download shp error ' + str(e))
 		
 		# Downloads income/race/population data for every Census tract in the state
+        # If you get an error here, it's probably because you forgot to set your Census API key as an environment variable in bin/activate
 		try:
 			download_census_data(city)
 		except Exception as e: print('download census data error ' + str(e))
@@ -184,9 +185,7 @@ def download_tiles_plus_geojson(city):
 	    "eq": "landsat-8-l1"
 	  }
 	}
-	time_range = "2011/2019"
-
-
+	time_range = "2011/2020"
 	
 	# update the parameters if there is manual override info, then perform search
 	if city['name'] in custom_dates:
@@ -217,8 +216,6 @@ def download_tiles_plus_geojson(city):
 
 
 	scenes = search.items()
-
-	print(len(scenes))
 
 
 	def summer_date(date_str):
@@ -365,7 +362,6 @@ def get_geom(city):
 	soup = BeautifulSoup(resp.text, "html.parser")
 
 	result_url = soup.select("a.btn-xs.details")[0]['href']
-
 
 	if city['name'].lower() in ["anchorage", "durham"]:
 		result_url = soup.select("a.btn-xs.details")[1]['href']

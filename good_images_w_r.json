@@ -534,6 +534,12 @@
     "r-nonwhite": "-0.05271285511045945"
   },
   {
+    "name": "virginia-charlottesville",
+    "image": "good0_B10.TIF",
+    "r-income": "-0.6291452275189147",
+    "r-nonwhite": "0.4553446732508457"
+  },
+  {
     "name": "virginia-chesapeake",
     "image": "good0_B10.TIF",
     "r-income": "-0.5644626273953702",
