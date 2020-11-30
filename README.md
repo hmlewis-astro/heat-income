@@ -31,6 +31,9 @@ Also in the `final` directory is a directory called `simpl`. This has .geojson f
 - Download the manual images as GEOTIFFs (specified in `download_data.py`) from EarthExplorer
 - `.sh mkfile.sh` (this will take a long time)
 
+Added: Python script to reproduce maps, similar to those show in the NPR article.
+-`python heat-income-maps.py`
+
 ## Caveats
 - There is a difference between poverty vs. low-income
 - More detailed Census geography = larger margins of error
