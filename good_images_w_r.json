@@ -534,10 +534,16 @@
     "r-nonwhite": "-0.05271285511045945"
   },
   {
+    "name": "virginia-albemarle",
+    "image": "good0_B10.TIF",
+    "r-income": "-0.18182663331484455",
+    "r-nonwhite": "0.6280892308167975"
+  },
+  {
     "name": "virginia-charlottesville",
     "image": "good0_B10.TIF",
-    "r-income": "-0.6291452275189147",
-    "r-nonwhite": "0.4553446732508457"
+    "r-income": "-0.6101681073424166",
+    "r-nonwhite": "0.4458111230833995"
   },
   {
     "name": "virginia-chesapeake",

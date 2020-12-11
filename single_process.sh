@@ -70,11 +70,27 @@ else
 	echo "A5 finished $KEY"
 
 	#Zonal stats. Make sure to run pip install rasterio rasterstats boto3
+	#rio zonalstats  ./data/output/analysis_out/$CITY/a5_shapes.geojson \
+		#-r $CITY_RASTER --stats "median" \
+		#> ./data/output/analysis_out/$CITY/a6_stats.geojson
+	#rio zonalstats wasn't working
+	#Instead, in python, run:
+	#>>> from rasterstats import zonal_stats
+	#>>> stats = zonal_stats("./data/output/analysis_out/$CITY/a5_shapes.geojson", "$CITY_RASTER", stats=['median'], geojson_out=True)
+	#>>> import json
+	#>>> with open('./data/output/analysis_out/$CITY/a6_stats.geojson', 'w') as f:
+	#>>> 	json.dump(stats,f)
+    #Make sure to open the resulting file and change all keywords "median" -> "_median"
+    #And add "{"type": "FeatureCollection", "features": " to the beginning of the file and an extra "}" at the very end of the file
 	echo "A6 finished $KEY"
 
 	#filter out slivers
 	mapshaper ./data/output/analysis_out/$CITY/a6_stats.geojson \
 		-o ./data/output/analysis_out/$CITY/a7_sliver.geojson
+		#mapshaper did not like this filter function, so it's commented out for now
+		#TODO: fix filter function
+		#-filter '_median != null'\
+		#
 	echo "A7 finished $KEY"
 
 	# convert spectral raidance => degrees kelvin

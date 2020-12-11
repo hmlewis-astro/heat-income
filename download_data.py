@@ -25,7 +25,7 @@ def main():
 
 	for city in cities:
 		city['state_fips'] = get_fips(city['state'])
-		city['county'] = get_county(city)
+		city['county'] = 'Albemarle' if city['name'] == 'Albemarle' else get_county(city)
 		print(city)
 
 		# 4 FUNCTIONS FOR EACH CITY TO GET DATA
@@ -37,7 +37,7 @@ def main():
 		except Exception as e: print('download shp error ' + str(e))
 		
 		# Downloads income/race/population data for every Census tract in the state
-        # If you get an error here, it's probably because you forgot to set your Census API key as an environment variable in bin/activate
+		# If you get an error here, it's probably because you forgot to set your Census API key as an environment variable in bin/activate
 		try:
 			download_census_data(city)
 		except Exception as e: print('download census data error ' + str(e))
@@ -179,10 +179,10 @@ def download_tiles_plus_geojson(city):
 	# set the initial query parameters for searching satellite
 	query_params = {
 	  "eo:cloud_cover": {
-	    "lt": 4
+		"lt": 4
 	  },
 	  "collection": {
-	    "eq": "landsat-8-l1"
+		"eq": "landsat-8-l1"
 	  }
 	}
 	time_range = "2011/2020"
@@ -241,7 +241,6 @@ def download_tiles_plus_geojson(city):
 		colrow_scenes = [x for x in scenes if in_colrows(x, centroid_colrows)]
 
 		summer_scenes = [x for x in colrow_scenes if summer_date(str(x.date))]
-
 
 		# start a counter of how many downloaded per colrow combination
 		all_colrows = {}
