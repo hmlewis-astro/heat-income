@@ -123,7 +123,7 @@ for i,m in enumerate(map_files):
 
     # Get map data
 	df_map = gpd.read_file(m)
-	df_landmarks = pd.read_csv(landmark_files[i])
+	df_landmarks = pd.read_csv(landmark_files[i], comment='#')
     
     # Format data of interest
 	df_map['_median'] = df_map['_median'].astype(np.float64) # Median temp in census tract
@@ -137,13 +137,13 @@ for i,m in enumerate(map_files):
 
     #Plot median temp
 	df_map.plot(column=df_map._median,
-                cmap='Reds',
+                cmap='Spectral_r',
                 ax=ax[0,0])
 	ax[0,0].axis('off')
 	ax[0,0].set_title('Surface Temperature', fontsize=24)
 
     # Colorbar and labels
-	plot_grad(df_map._median, 'Reds', ax[1,0])
+	plot_grad(df_map._median, 'Spectral_r', ax[1,0])
 	ax[1,0].axis('off')
 	ax[1,0].text(np.min(df_map._median),0.75,
              '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df_map._median)-np.mean(df_map._median)),
@@ -177,11 +177,12 @@ for i,m in enumerate(map_files):
              ha='center', fontsize=18)
 
     # Plot fraction of population
-	df_map.plot(column=df_map.white_popu/df_map.total_popu,
-                  cmap='Blues', vmin=0.0, vmax=1.0,
+	vmax = round(np.max(1.0-(df_map.white_popu/df_map.total_popu)),1)
+	df_map.plot(column=1.0-(df_map.white_popu/df_map.total_popu),
+                  cmap='Blues', vmin=0.0, vmax=vmax,
                   ax=ax[0,2])
 	ax[0,2].axis('off')
-	ax[0,2].set_title('Percent White Population', fontsize=24)
+	ax[0,2].set_title('Percent Non-White Population', fontsize=24)
 
     # Colorbar and labels
 	plot_grad(df_map.white_popu/df_map.total_popu, 'Blues', ax[1,2])
@@ -190,7 +191,7 @@ for i,m in enumerate(map_files):
              '0%',
              ha='center', fontsize=18)
 	ax[1,2].text(np.max(df_map.white_popu/df_map.total_popu),0.775,
-             '100%',
+             '{:.0f}%'.format(vmax*100),
              ha='center', fontsize=18)
     
 	fig.subplots_adjust(hspace=0, wspace=0.15)
@@ -206,8 +207,8 @@ df_map_cville = gpd.read_file(cville_map_files)
 df_map_albemr = gpd.read_file(albemr_map_files)
 df_map_total = df_map_cville.append(df_map_albemr)
 
-df_landmarks_cville = pd.read_csv(cville_landmark_files)
-df_landmarks_albemr = pd.read_csv(albemr_landmark_files)
+df_landmarks_cville = pd.read_csv(cville_landmark_files, comment='#')
+df_landmarks_albemr = pd.read_csv(albemr_landmark_files, comment='#')
 
 # Format data of interest
 df_map_total['_median'] = df_map_total['_median'].astype(np.float64) # Median temp in census tract
@@ -221,20 +222,20 @@ fig, ax = plt.subplots(3,3, figsize=(20,10), gridspec_kw={'height_ratios': [20,2
 
 #Plot median temp
 df_map_total.plot(column=df_map_total._median,
-            cmap='Reds',
+            cmap='Spectral_r',
             ax=ax[0,0])
 ax[0,0].axis('off')
 ax[0,0].set_title('Surface Temperature', fontsize=24)
 
 df_map_total.plot(column=df_map_total._median,
-            cmap='Reds',
+            cmap='Spectral_r',
             ax=ax[1,0])
 ax[1,0].set_xlim(-78.54,-78.43)
 ax[1,0].set_ylim(37.99,38.09)
 ax[1,0].axis('off')
 
 # Colorbar and labels
-plot_grad(df_map_total._median, 'Reds', ax[2,0])
+plot_grad(df_map_total._median, 'Spectral_r', ax[2,0])
 ax[2,0].axis('off')
 ax[2,0].text(np.min(df_map_total._median),0.75,
              '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df_map_total._median)-np.mean(df_map_total._median)),
@@ -251,10 +252,16 @@ df_map_total.plot(column=df_map_total.median_hou,
             ax=ax[0,1])
 df_landmarks_albemr.plot.scatter(x='long', y='lat', ax=ax[0,1], s=15, c='k')
 for j,lab in enumerate(df_landmarks_albemr.landmark):
+	if j % 4 in [0,1]:
+		offset = 0.00002
+		va = 'bottom'
+	else:
+		offset = -0.00004
+		va = 'top'
 	ax[0,1].annotate(lab,
 					 xy=(df_landmarks_albemr.long[j], df_landmarks_albemr.lat[j]),
-					 xytext=(df_landmarks_albemr.long[j],df_landmarks_albemr.lat[j]+0.00001),
-					 ha='center', va='bottom',
+					 xytext=(df_landmarks_albemr.long[j],df_landmarks_albemr.lat[j]+offset),
+					 ha='center', va=va,
 					 fontsize=12)
 ax[0,1].axis('off')
 ax[0,1].set_title('Income', fontsize=24)
@@ -266,7 +273,7 @@ df_landmarks_cville.plot.scatter(x='long', y='lat', ax=ax[1,1], s=15, c='k')
 for j,lab in enumerate(df_landmarks_cville.landmark):
 	ax[1,1].annotate(lab,
 					 xy=(df_landmarks_cville.long[j], df_landmarks_cville.lat[j]),
-					 xytext=(df_landmarks_cville.long[j],df_landmarks_cville.lat[j]+0.00001),
+					 xytext=(df_landmarks_cville.long[j],df_landmarks_cville.lat[j]+0.00002),
 					 ha='center', va='bottom',
 					 fontsize=12)
 ax[1,1].set_xlim(-78.54,-78.43)
@@ -286,14 +293,15 @@ ax[2,1].text(np.max(df_map_total.median_hou),0.75,
 zoom_effect_box(ax[0,1], ax[1,1], [-78.54, 37.99, -78.43, 38.09])
 
 # Plot fraction of population
-df_map_total.plot(column=df_map_total.white_popu/df_map_total.total_popu,
+df_map_total.plot(column=1.0-(df_map_total.white_popu/df_map_total.total_popu),
             cmap='Blues', vmin=0.0, vmax=1.0,
             ax=ax[0,2])
 ax[0,2].axis('off')
-ax[0,2].set_title('Percent White Population', fontsize=24)
+ax[0,2].set_title('Percent Non-White Population', fontsize=24)
 
-df_map_total.plot(column=df_map_total.white_popu/df_map_total.total_popu,
-            cmap='Blues', vmin=0.0, vmax=1.0,
+vmax = round(np.max(1.0-(df_map_total.white_popu/df_map_total.total_popu)),1)
+df_map_total.plot(column=1.0-(df_map_total.white_popu/df_map_total.total_popu),
+            cmap='Blues', vmin=0.0, vmax=vmax,
             ax=ax[1,2])
             
 ax[1,2].set_xlim(-78.54,-78.43)
@@ -307,7 +315,7 @@ ax[2,2].text(np.min(df_map_total.white_popu/df_map_total.total_popu),0.775,
              '0%',
              ha='center', fontsize=18)
 ax[2,2].text(np.max(df_map_total.white_popu/df_map_total.total_popu),0.775,
-             '100%',
+             '{:.0f}%'.format(vmax*100),
              ha='center', fontsize=18)
              
 zoom_effect_box(ax[0,2], ax[1,2], [-78.54, 37.99, -78.43, 38.09])
