@@ -39,11 +39,11 @@ Correlations for each city are listed in `good_images_w_r.json`.
 
 **Added: Maps for each city are saved as PDFs in `data/output/analysis_out/final/plots/`.**
 
-### Simplified files
+## Simplified files
 
 Also in the `final` directory is a directory called `simpl`. This has .geojson files with simplified polygons for mapping on the web. These are used in NPR's web maps and were simplified using [mapshaper](https://github.com/mbloch/mapshaper).
 
-### Caveats
+## Caveats
 - There is a difference between poverty vs. low-income
 - More detailed Census geography = larger margins of error
 - We're using surface temperature, not ambient temperature
