@@ -25,13 +25,14 @@ def main():
 
 	for city in cities:
 		city['state_fips'] = get_fips(city['state'])
-		city['county'] = 'Albemarle' if city['name'] == 'Albemarle' else get_county(city)
-		print(city)
+		city['county'] = 'Albemarle' if (city['name'] == 'Albemarle') else get_county(city)
+		print('{}, {}'.format(city['name'], city['state']))
 
 		# 4 FUNCTIONS FOR EACH CITY TO GET DATA
 		# ========================================
 
 		# Downloads shapefile of every census tract in the state
+		# TODO: update to 2020 census?
 		try:
 			download_census_shp(city)
 		except Exception as e: print('download shp error ' + str(e))
@@ -43,6 +44,7 @@ def main():
 		except Exception as e: print('download census data error ' + str(e))
 		
 		# Downloads raster satellite images for each city, and OSM city boundaries if necessary
+		# TODO: change to pull more recent images?
 		try:
 			# austin (TX) and st petersburg/tampa (FL) not loading - be sure to grab by hand
 			download_tiles_plus_geojson(city)
@@ -60,13 +62,14 @@ def main():
 
 
 def download_census_shp(city):
-	base_url = "https://www2.census.gov/geo/tiger/TIGER2017/TRACT/tl_2017_--FIPS--_tract.zip"
-	real_url = base_url.replace("--FIPS--", city['state_fips'])
-	resp = requests.get(real_url)
+	#base_url = "https://www2.census.gov/geo/tiger/TIGER2017/TRACT/tl_2017_--FIPS--_tract.zip"
+    base_url = "https://www2.census.gov/geo/tiger/TIGER2017/BG/tl_2017_--FIPS--_bg.zip"
+    real_url = base_url.replace("--FIPS--", city['state_fips'])
+    resp = requests.get(real_url)
 
-	z = zipfile.ZipFile(io.BytesIO(resp.content))
+    z = zipfile.ZipFile(io.BytesIO(resp.content))
 
-	z.extractall('data/output/' + clean_path_name(city['state']))
+    z.extractall('data/output/' + clean_path_name(city['state']))
 
 
 
@@ -83,12 +86,13 @@ def download_census_data(city):
 
 	# name, geoid, median income by residence
 	# https://api.census.gov/data/2015/acs/acs1/groups/B07011.html
-	query_variables = ["NAME","GEO_ID", "B02001_002E", "B01003_001E", "B19013_001E"]
-	query_keys = {"B02001_002E": "white population", "B01003_001E": "total population", "B19013_001E": "Median household income in the past 12 months"}
+	query_variables = ["NAME", "GEO_ID", "B02001_002E", "B01003_001E", "B19013_001E"]
+	query_keys = {"B02001_002E":"white population", "B01003_001E":"total population", "B19013_001E":"Median household income in the past 12 months"}
 	base_url = "https://api.census.gov/data/2017/acs/acs5/"
-	request_url = base_url + "?get=" + ",".join(query_variables) + "&in=state:" + state_fips + "&for=tract:*&key=" + api_key
-
-	state_census_output_file = "data/output/" + clean_path_name(state) + "/" + 'tracts-data.json'
+	#request_url = base_url + "?get=" + ",".join(query_variables) + "&in=state:" + state_fips + "&for=tract:*&key=" + api_key
+	request_url = base_url + "?get=" + ",".join(query_variables) + "&for=block%20group:*" + "&in=state:" + state_fips + "&in=county:*" + "&in=tract:*&key=" + api_key
+	#state_census_output_file = "data/output/" + clean_path_name(state) + "/" + 'tracts-data.json'
+	state_census_output_file = "data/output/" + clean_path_name(state) + "/" + 'bg-data.json'
 
 	resp = requests.get(request_url)
 
@@ -97,7 +101,6 @@ def download_census_data(city):
 	for ind, col_head in enumerate(resp_text_obj[0]):
 		if col_head in query_keys:
 			resp_text_obj[0][ind] = query_keys[col_head].lower().replace(" ", "_")
-
 
 	with open(state_census_output_file, 'w') as ofile:
 		ofile.write(json.dumps(resp_text_obj))
@@ -162,7 +165,7 @@ def download_tiles_plus_geojson(city):
 		coordinates = coordinates['features'][0]['geometry']
 
 
-	print('downloading new data')
+	print('downloading new data\n')
 
 	# get center of geography and the bounding box of it
 	centroid = get_center_coordinate(coordinates['coordinates'])[0]
@@ -174,7 +177,6 @@ def download_tiles_plus_geojson(city):
 		centroid_colrows = get_landsat_colrows(centroid)
 	else:
 		centroid_colrows = [custom_colrows[city['name']]]
-
 
 	# set the initial query parameters for searching satellite
 	query_params = {
@@ -193,7 +195,7 @@ def download_tiles_plus_geojson(city):
 			api_base_url = "http://sat-api.developmentseed.org/collections/landsat-8-l1/items/"
 			resp = requests.get(api_base_url + custom_dates[city['name']])
 			if "not found" in resp.text.lower():
-				print("Need to download image manually for " + city['name'] + "!")
+				print("Need to download image by hand for " + city['name'] + "!")
 				return
 			json_obj = json.loads(resp.text)
 			assets = json_obj['assets']
@@ -217,7 +219,6 @@ def download_tiles_plus_geojson(city):
 
 	scenes = search.items()
 
-
 	def summer_date(date_str):
 		for month in ['06', '07', '08']:
 			if "-" + month + "-" in date_str:
@@ -234,8 +235,18 @@ def download_tiles_plus_geojson(city):
 	# download the scenes that are manually set with filename containing "good"
 	if city['name'] in custom_dates:
 		for ind, scene in enumerate(scenes):
+			print(scene.date)
 			scene.download("B10", path=cityDir, filename='good' + str(ind))
-			print("manual scene downloaded")
+			print("manual scene downloaded\n")
+	# if the city is contained in good images already, only get the preapproved image
+	elif clean_path_name(city['state']) + "-" + clean_path_name(city['name']) in good_imgs_dict:
+		for ind, scene in enumerate(scenes):
+			filename = good_imgs_dict[clean_path_name(city['state']) + "-" + clean_path_name(city['name'])].replace("_B10.TIF","")
+			filedate = filename[-10:]
+			if str(scene.date) == filedate:
+				print(scene.date)
+				scene.download("B10", path=cityDir, filename=filename)
+				print("approved scene downloaded\n")
 	else:
 		# if not manually set, filter scenes to ones we want
 		colrow_scenes = [x for x in scenes if in_colrows(x, centroid_colrows)]
@@ -251,7 +262,6 @@ def download_tiles_plus_geojson(city):
 			if colrow not in all_colrows:
 				all_colrows[colrow] = 0
 		
-
 		# start downloading non-manually set scenes
 		for scene in summer_scenes:
 			colrow = scene['eo:column'] + "-" + scene['eo:row']
@@ -260,11 +270,11 @@ def download_tiles_plus_geojson(city):
 			try:
 				if export_name in good_imgs_dict[clean_path_name(city['state']) + "-" + clean_path_name(city['name'])]:
 					scene.download("B10", path=cityDir, filename=colrow + "-" + str(scene.date))
-					print("non-manual scene downloaded")
+					print("non-manual scene downloaded\n")
 			### if the city is NOT contained in good images already, download until fill counter
 			except:
 				scene.download("B10", path=cityDir, filename=colrow + "-" + str(scene.date))
-				print("non-manual scene downloaded")
+				print("non-manual scene downloaded\n")
 
 
 			# add to the download counter oo each loop
@@ -314,7 +324,7 @@ def get_landsat_colrows(centroid):
 					"includeUnknownCC":"1",
 					"maxCC":100,
 					"minCC":0,
-					"months":["5","6","7"],
+					"months":["5","6","7","8","9"],
 					"pType":"polygon"}
 
 		save_post = session.post("https://earthexplorer.usgs.gov/tabs/save", headers=save_headers, data={"data": json.dumps(save_data)})
@@ -355,8 +365,6 @@ def get_geom(city):
 	domain = "https://nominatim.openstreetmap.org/"
 
 	resp = requests.get(domain + 'search.php?q='+ city['name'].replace(" ", "+") + "+" + city['state'].replace(" ", "+") +'&polygon_geojson=1')
-
-	print(resp.url)
 
 	soup = BeautifulSoup(resp.text, "html.parser")
 
@@ -505,7 +513,8 @@ def merge_census_shp(city):
 	added_extension = "merged"
 
 	census_data = []
-	census_output_file = "data/output/" + clean_path_name(city['state']) + '/tracts-data.json'
+	#census_output_file = "data/output/" + clean_path_name(city['state']) + '/tracts-data.json'
+	census_output_file = "data/output/" + clean_path_name(city['state']) + '/bg-data.json'
 
 	with open(census_output_file, 'r') as ofile:
 		census_data = json.loads(ofile.read())
@@ -522,12 +531,13 @@ def merge_census_shp(city):
 
 
 	gpd_census_data = gpd.GeoDataFrame(census_formatted)
-	gpd_census_data['GEOID'] = gpd_census_data["GEO_ID"].str.replace("1400000US", "")
-
+	#gpd_census_data['GEOID'] = gpd_census_data["GEO_ID"].str.replace("1400000US", "")
+	gpd_census_data['GEOID'] = gpd_census_data["GEO_ID"].str.replace("1500000US", "")
 
 	state_shp_path = ""
 
-	for file in glob.glob("data/output/" + clean_path_name(city['state']) + "/*_tract.shp"):
+	#for file in glob.glob("data/output/" + clean_path_name(city['state']) + "/*_tract.shp"):
+	for file in glob.glob("data/output/" + clean_path_name(city['state']) + "/*_bg.shp"):
 		state_shp_path = file
 
 
@@ -540,7 +550,7 @@ def merge_census_shp(city):
 
 
 
-	print('\n========\n')
+	print('========\n')
 
 
 if __name__ == "__main__":

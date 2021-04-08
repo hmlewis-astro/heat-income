@@ -8,7 +8,7 @@ import numpy as np
 # DEFINE WHAT VARIABLES YOU WANT TO COMPARE
 # x_attribute = "median_hou"
 x_attribute = sys.argv[2]
-y_attribute = "_median"
+y_attribute = "median"
 
 x_values = []
 y_values = []
@@ -24,7 +24,6 @@ ofile.close()
 # COMPILE VARIABLES INTO TWO LISTS
 
 for feature in geojson['features']:
-
 	if x_attribute == "nonwhite_pct":
 		total_pop = int(feature['properties']['total_popu'])
 		white_pop = int(feature['properties']['white_popu'])
@@ -33,7 +32,6 @@ for feature in geojson['features']:
 		else:
 			x = None
 	else:
-		print(feature['properties'])
 		x = int(feature['properties'][x_attribute])
 	y = feature['properties'][y_attribute]
 

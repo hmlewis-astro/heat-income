@@ -2,6 +2,7 @@ import sys
 import getopt
 
 import json
+import geopandas as gpd
 from rasterstats import zonal_stats
 
 
@@ -31,23 +32,11 @@ def main(argv):
 			rasterfile = arg
 		elif opt in ("-o", "--ofile"):
 			outfile = arg
-			
-	#print(shapefile)
-	#print(rasterfile)
-	#print(outfile)
 	
 	stats = zonal_stats(shapefile, rasterfile, stats=['median'], geojson_out=True, nodata=-9999)
+	geostats = gpd.GeoDataFrame.from_features(stats)
 	
-	#str_front = "{" + "'type': 'FeatureCollection', 'features': "
-	#str_back = "}"
-	
-	#old_med = "('median'"
-	#new_med = "('_median'"
-	
-	#stats = str_front + str(stats).replace(old_str,new_str) + str_back
-	#stats = str(stats).replace(old_med,new_med)
-	with open(outfile, 'w') as ofile:
-		json.dump(stats,ofile)
+	geostats.to_file(outfile, driver='GeoJSON')
 	
 
 if __name__ == "__main__":

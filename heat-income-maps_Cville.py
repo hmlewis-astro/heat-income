@@ -126,73 +126,74 @@ for i,m in enumerate(map_files):
 	df_landmarks = pd.read_csv(landmark_files[i], comment='#')
     
     # Format data of interest
-	df_map['_median'] = df_map['_median'].astype(np.float64) # Median temp in census tract
+	df_map['median'] = df_map['median'].astype(np.float64) # Median temp in census tract
 	df_map['median_hou'] = df_map['median_hou'].astype(np.float64) # Median household income in census tract
 	df_map['total_popu'] = df_map['total_popu'].astype(np.float64) # Total population in census tract
 	df_map['white_popu'] = df_map['white_popu'].astype(np.float64) # White population in census tract
 	df_map[df_map['median_hou'] < 0] = np.nan
+	df_map['nonwhite_popu'] = 1.0-(df_map['white_popu']/df_map['total_popu'])
     
     # Make plot
 	fig, ax = plt.subplots(2,3, figsize=(20,10), gridspec_kw={'height_ratios': [20,1]})
 
     #Plot median temp
-	df_map.plot(column=df_map._median,
+	df_map.plot(column=df_map['median'],
                 cmap='Spectral_r',
                 ax=ax[0,0])
 	ax[0,0].axis('off')
 	ax[0,0].set_title('Surface Temperature', fontsize=24)
 
     # Colorbar and labels
-	plot_grad(df_map._median, 'Spectral_r', ax[1,0])
+	plot_grad(df_map['median'], 'Spectral_r', ax[1,0])
 	ax[1,0].axis('off')
-	ax[1,0].text(np.min(df_map._median),0.75,
-             '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df_map._median)-np.mean(df_map._median)),
-             ha='center', fontsize=18)
-	ax[1,0].text(np.max(df_map._median),0.75,
-             '{0:.1f}$^\circ$\nabove avg.'.format(np.max(df_map._median)-np.mean(df_map._median)),
-             ha='center', fontsize=18)
+	ax[1,0].text(np.min(df_map['median']),0.75,
+				 '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df_map['median'])-np.mean(df_map['median'])),
+				 ha='center', fontsize=18)
+	ax[1,0].text(np.max(df_map['median']),0.75,
+				 '{0:.1f}$^\circ$\nabove avg.'.format(np.max(df_map['median'])-np.mean(df_map['median'])),
+				 ha='center', fontsize=18)
 
     # Plot household income
-	df_map.plot(column=df_map.median_hou,
-                  cmap='Greens',
-                  ax=ax[0,1])
+	df_map.plot(column=df_map['median_hou'],
+				cmap='Greens',
+				ax=ax[0,1])
 	df_landmarks.plot.scatter(x='long', y='lat', ax=ax[0,1], s=15, c='k')
-	for j,lab in enumerate(df_landmarks.landmark):
+	for j,lab in enumerate(df_landmarks['landmark']):
 		ax[0,1].annotate(lab,
-						 xy=(df_landmarks.long[j], df_landmarks.lat[j]),
-						 xytext=(df_landmarks.long[j],df_landmarks.lat[j]+0.00001),
+						 xy=(df_landmarks['long'][j], df_landmarks['lat'][j]),
+						 xytext=(df_landmarks['long'][j],df_landmarks['lat'][j]+0.00001),
 						 ha='center', va='bottom',
 						 fontsize=12)
 	ax[0,1].axis('off')
 	ax[0,1].set_title('Income', fontsize=24)
 
     # Colorbar and labels
-	plot_grad(df_map.median_hou, 'Greens', ax[1,1])
+	plot_grad(df_map['median_hou'], 'Greens', ax[1,1])
 	ax[1,1].axis('off')
-	ax[1,1].text(np.min(df_map.median_hou),0.75,
-             'Minimum\n\${0:.0f}K'.format(np.min(df_map.median_hou)/1000.0),
-             ha='center', fontsize=18)
-	ax[1,1].text(np.max(df_map.median_hou),0.75,
-             'Maximum\n\${0:.0f}K'.format(np.max(df_map.median_hou)/1000.0),
-             ha='center', fontsize=18)
+	ax[1,1].text(np.min(df_map['median_hou']),0.75,
+				 'Minimum\n\${0:.0f}K'.format(np.min(df_map['median_hou'])/1000.0),
+				 ha='center', fontsize=18)
+	ax[1,1].text(np.max(df_map['median_hou']),0.75,
+				 'Maximum\n\${0:.0f}K'.format(np.max(df_map['median_hou'])/1000.0),
+				 ha='center', fontsize=18)
 
     # Plot fraction of population
-	vmax = round(np.max(1.0-(df_map.white_popu/df_map.total_popu)),1)
-	df_map.plot(column=1.0-(df_map.white_popu/df_map.total_popu),
-                  cmap='Blues', vmin=0.0, vmax=vmax,
-                  ax=ax[0,2])
+	vmax = round(np.max(df_map['nonwhite_popu']),1)
+	df_map.plot(column=df_map['nonwhite_popu'],
+				cmap='Blues', vmin=0.0, vmax=vmax,
+				ax=ax[0,2])
 	ax[0,2].axis('off')
 	ax[0,2].set_title('Percent Non-White Population', fontsize=24)
 
     # Colorbar and labels
-	plot_grad(df_map.white_popu/df_map.total_popu, 'Blues', ax[1,2])
+	plot_grad(df_map['nonwhite_popu'], 'Blues', ax[1,2])
 	ax[1,2].axis('off')
-	ax[1,2].text(np.min(df_map.white_popu/df_map.total_popu),0.775,
-             '0%',
-             ha='center', fontsize=18)
-	ax[1,2].text(np.max(df_map.white_popu/df_map.total_popu),0.775,
-             '{:.0f}%'.format(vmax*100),
-             ha='center', fontsize=18)
+	ax[1,2].text(np.min(df_map['nonwhite_popu']),0.775,
+				 '0%',
+				 ha='center', fontsize=18)
+	ax[1,2].text(np.max(df_map['nonwhite_popu']),0.775,
+				 '{:.0f}%'.format(vmax*100),
+				 ha='center', fontsize=18)
     
 	fig.subplots_adjust(hspace=0, wspace=0.15)
 
@@ -211,47 +212,48 @@ df_landmarks_cville = pd.read_csv(cville_landmark_files, comment='#')
 df_landmarks_albemr = pd.read_csv(albemr_landmark_files, comment='#')
 
 # Format data of interest
-df_map_total['_median'] = df_map_total['_median'].astype(np.float64) # Median temp in census tract
+df_map_total['median'] = df_map_total['median'].astype(np.float64) # Median temp in census tract
 df_map_total['median_hou'] = df_map_total['median_hou'].astype(np.float64) # Median household income in census tract
 df_map_total['total_popu'] = df_map_total['total_popu'].astype(np.float64) # Total population in census tract
 df_map_total['white_popu'] = df_map_total['white_popu'].astype(np.float64) # White population in census tract
 df_map_total[df_map_total['median_hou'] < 0] = np.nan
+df_map_total['nonwhite_popu'] = 1.0-(df_map_total['white_popu']/df_map_total['total_popu'])
     
 # Make single plot for Charlottesville and Albemarle County data
 fig, ax = plt.subplots(3,3, figsize=(20,10), gridspec_kw={'height_ratios': [20,20,2]})
 
 #Plot median temp
-df_map_total.plot(column=df_map_total._median,
+df_map_total.plot(column=df_map_total['median'],
             cmap='Spectral_r',
             ax=ax[0,0])
 ax[0,0].axis('off')
 ax[0,0].set_title('Surface Temperature', fontsize=24)
 
-df_map_total.plot(column=df_map_total._median,
-            cmap='Spectral_r',
-            ax=ax[1,0])
+df_map_total.plot(column=df_map_total['median'],
+				  cmap='Spectral_r',
+				  ax=ax[1,0])
 ax[1,0].set_xlim(-78.54,-78.43)
 ax[1,0].set_ylim(37.99,38.09)
 ax[1,0].axis('off')
 
 # Colorbar and labels
-plot_grad(df_map_total._median, 'Spectral_r', ax[2,0])
+plot_grad(df_map_total['median'], 'Spectral_r', ax[2,0])
 ax[2,0].axis('off')
-ax[2,0].text(np.min(df_map_total._median),0.75,
-             '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df_map_total._median)-np.mean(df_map_total._median)),
+ax[2,0].text(np.min(df_map_total['median']),0.75,
+             '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df_map_total['median'])-np.mean(df_map_total['median'])),
              ha='center', fontsize=18)
-ax[2,0].text(np.max(df_map_total._median),0.75,
-             '{0:.1f}$^\circ$\nabove avg.'.format(np.max(df_map_total._median)-np.mean(df_map_total._median)),
+ax[2,0].text(np.max(df_map_total['median']),0.75,
+             '{0:.1f}$^\circ$\nabove avg.'.format(np.max(df_map_total['median'])-np.mean(df_map_total['median'])),
              ha='center', fontsize=18)
 
 zoom_effect_box(ax[0,0], ax[1,0], [-78.54, 37.99, -78.43, 38.09])
 
 # Plot household income
-df_map_total.plot(column=df_map_total.median_hou,
-            cmap='Greens',
-            ax=ax[0,1])
+df_map_total.plot(column=df_map_total['median_hou'],
+				  cmap='Greens',
+				  ax=ax[0,1])
 df_landmarks_albemr.plot.scatter(x='long', y='lat', ax=ax[0,1], s=15, c='k')
-for j,lab in enumerate(df_landmarks_albemr.landmark):
+for j,lab in enumerate(df_landmarks_albemr['landmark']):
 	if j % 4 in [0,1]:
 		offset = 0.00002
 		va = 'bottom'
@@ -259,21 +261,21 @@ for j,lab in enumerate(df_landmarks_albemr.landmark):
 		offset = -0.00004
 		va = 'top'
 	ax[0,1].annotate(lab,
-					 xy=(df_landmarks_albemr.long[j], df_landmarks_albemr.lat[j]),
-					 xytext=(df_landmarks_albemr.long[j],df_landmarks_albemr.lat[j]+offset),
+					 xy=(df_landmarks_albemr['long'][j], df_landmarks_albemr['lat'][j]),
+					 xytext=(df_landmarks_albemr['long'][j],df_landmarks_albemr['lat'][j]+offset),
 					 ha='center', va=va,
 					 fontsize=12)
 ax[0,1].axis('off')
 ax[0,1].set_title('Income', fontsize=24)
 
-df_map_total.plot(column=df_map_total.median_hou,
-            cmap='Greens',
-            ax=ax[1,1])
+df_map_total.plot(column=df_map_total['median_hou'],
+				  cmap='Greens',
+				  ax=ax[1,1])
 df_landmarks_cville.plot.scatter(x='long', y='lat', ax=ax[1,1], s=15, c='k')
-for j,lab in enumerate(df_landmarks_cville.landmark):
+for j,lab in enumerate(df_landmarks_cville['landmark']):
 	ax[1,1].annotate(lab,
-					 xy=(df_landmarks_cville.long[j], df_landmarks_cville.lat[j]),
-					 xytext=(df_landmarks_cville.long[j],df_landmarks_cville.lat[j]+0.00002),
+					 xy=(df_landmarks_cville['long'][j], df_landmarks_cville['lat'][j]),
+					 xytext=(df_landmarks_cville['long'][j],df_landmarks_cville['lat'][j]+0.00002),
 					 ha='center', va='bottom',
 					 fontsize=12)
 ax[1,1].set_xlim(-78.54,-78.43)
@@ -281,40 +283,39 @@ ax[1,1].set_ylim(37.99,38.09)
 ax[1,1].axis('off')
 
 # Colorbar and labels
-plot_grad(df_map_total.median_hou, 'Greens', ax[2,1])
+plot_grad(df_map_total['median_hou'], 'Greens', ax[2,1])
 ax[2,1].axis('off')
-ax[2,1].text(np.min(df_map_total.median_hou),0.75,
-             'Minimum\n\${0:.0f}K'.format(np.min(df_map_total.median_hou)/1000.0),
+ax[2,1].text(np.min(df_map_total['median_hou']),0.75,
+             'Minimum\n\${0:.0f}K'.format(np.min(df_map_total['median_hou'])/1000.0),
              ha='center', fontsize=18)
-ax[2,1].text(np.max(df_map_total.median_hou),0.75,
-             'Maximum\n\${0:.0f}K'.format(np.max(df_map_total.median_hou)/1000.0),
+ax[2,1].text(np.max(df_map_total['median_hou']),0.75,
+             'Maximum\n\${0:.0f}K'.format(np.max(df_map_total['median_hou'])/1000.0),
              ha='center', fontsize=18)
              
 zoom_effect_box(ax[0,1], ax[1,1], [-78.54, 37.99, -78.43, 38.09])
 
 # Plot fraction of population
-df_map_total.plot(column=1.0-(df_map_total.white_popu/df_map_total.total_popu),
-            cmap='Blues', vmin=0.0, vmax=1.0,
-            ax=ax[0,2])
+vmax = round(np.max(df_map_total['nonwhite_popu']),1)
+df_map_total.plot(column=df_map_total['nonwhite_popu'],
+				  cmap='Blues', vmin=0.0, vmax=vmax,
+				  ax=ax[0,2])
 ax[0,2].axis('off')
 ax[0,2].set_title('Percent Non-White Population', fontsize=24)
 
-vmax = round(np.max(1.0-(df_map_total.white_popu/df_map_total.total_popu)),1)
-df_map_total.plot(column=1.0-(df_map_total.white_popu/df_map_total.total_popu),
-            cmap='Blues', vmin=0.0, vmax=vmax,
-            ax=ax[1,2])
-            
+df_map_total.plot(column=df_map_total['nonwhite_popu'],
+				  cmap='Blues', vmin=0.0, vmax=vmax,
+				  ax=ax[1,2])
 ax[1,2].set_xlim(-78.54,-78.43)
 ax[1,2].set_ylim(37.99,38.09)
 ax[1,2].axis('off')
 
 # Colorbar and labels
-plot_grad(df_map_total.white_popu/df_map_total.total_popu, 'Blues', ax[2,2])
+plot_grad(df_map_total['nonwhite_popu'], 'Blues', ax[2,2])
 ax[2,2].axis('off')
-ax[2,2].text(np.min(df_map_total.white_popu/df_map_total.total_popu),0.775,
+ax[2,2].text(np.min(df_map_total['nonwhite_popu']),0.775,
              '0%',
              ha='center', fontsize=18)
-ax[2,2].text(np.max(df_map_total.white_popu/df_map_total.total_popu),0.775,
+ax[2,2].text(np.max(df_map_total['nonwhite_popu']),0.775,
              '{:.0f}%'.format(vmax*100),
              ha='center', fontsize=18)
              

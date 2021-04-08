@@ -19,18 +19,18 @@ features = new_json['features']
 large_values = False
 
 for feature in features:
-	_median = feature['properties']['_median']
+	_median = feature['properties']['median']
 	if float(_median) > 255:
 		large_values = True
 
 if large_values == True:
 
 	for feature in features:
-		_median = feature['properties']['_median']
+		_median = feature['properties']['median']
 		kelvin = 0
 		first_step = (_median*0.000334)+0.1
 		kelvin =1321.0789/np.log((774.8853/first_step)+1)
-		feature['properties']['_median'] = kelvin
+		feature['properties']['median'] = kelvin
 
 
 with open(existing_file.replace("a7_sliver", "a8_converted"), 'w') as ofile:
