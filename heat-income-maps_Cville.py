@@ -325,6 +325,7 @@ fig.subplots_adjust(hspace=0, wspace=0.15)
 
 # Save figure
 plt.savefig(plot_path + '/charlottesville_albemarle.pdf', dpi=300)
+plt.savefig(plot_path + '/charlottesville_albemarle.png', dpi=200)
 print('Plot for charlottesville + albemarle done!'.format(m[len(maps_path):-len(file_extn)]))
     
 plt.close()
