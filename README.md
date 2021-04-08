@@ -7,7 +7,7 @@ _Updated code by Hannah Lewis_
 **With the addition of these two regions, I've also opted to use block group-level data from the U.S. Census, rather than tract-level data, since population statistics tend to vary widely across tracts in these particular areas.**
 
 **For the City of Charlottesville, there is a strong correlation between heat and income, whereas in Albemarle County, there is no correlation observed, as illustrated by this map:**
-![Charlottesville Albemarle map](https://github.com/hmlewis-astro/heat-income/blob/master/data/output/analysis_out/final/plots/charlottesville_albemarle.png).
+![Charlottesville Albemarle map](https://github.com/hmlewis-astro/heat-income/blob/master/data/output/analysis_out/final/plots/charlottesville_albemarle.png)
 
 _Original code by Sean McMinn and Nick Underwood; additional reporting by Meg Anderson and Nora Eckert_
 
