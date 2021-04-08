@@ -1,8 +1,15 @@
 # NPR Heat and Poverty Analysis
 
-_Code by Sean McMinn and Nick Underwood; additional reporting by Meg Anderson and Nora Eckert_
+_Updated code by Hannah Lewis_
 
-_Additional cities added (Charlottesville and Albemarle County, VA) by Hannah Lewis_
+**As part of ongoing climate justice work for the University of Virginia Equity Center and University of Virginia Sustainability Partnership, I have reproduced the analysis originally laid out in the NPR article ["As Rising Heat Bakes U.S. Cities, The Poor Often Feel It Most"](https://www.npr.org/2019/09/03/754044732/as-rising-heat-bakes-u-s-cities-the-poor-often-feel-it-most) for the City of Charlottesville and Albemarle County, Virginia.**
+
+**With the addition of these two regions, I've also opted to use block group-level data from the U.S. Census, rather than tract-level data, since population statistics tend to vary widely across tracts in these particular areas.**
+
+**For the City of Charlottesville, there is a strong correlation between heat and income, whereas in Albemarle County, there is no correlation observed, as illustrated by this map:**
+! [Charlottesville Albemarle map](https://github.com/hmlewis-astro/heat-income/blob/master/data/output/analysis_out/final/plots/charlottesville_albemarle.pdf).
+
+_Original code by Sean McMinn and Nick Underwood; additional reporting by Meg Anderson and Nora Eckert_
 
 To determine the link between heat and income in U.S. cities, NPR used NASA satellite imagery and U.S. Census American Community Survey data. An open-source computer program developed by NPR downloaded median household income data for census tracts in the 100 most populated American cities, as well as geographic boundaries for census tracts. NPR combined these data with TIGER/Line shapefiles of the cities.
 
@@ -12,17 +19,6 @@ For each city, NPR aligned the satellite surface temperature data with the censu
 
 The satellite data measures temperature at a surface, like the ground or a rooftop. We used this measurement rather than ambient temperature, which measures the air about two meters above the ground. Measuring air is a more accurate measure of how people experience heat, but satellite data is more widely available than air temperature data. Using it allowed us to provide a more complete snapshot of temperature trends across many cities.
 
-## Data files
-
-Completed data files for each city are saved as .geojson files in `data/output/analysis_out/final/`.
-
-Correlations for each city are listed in `good_images_w_r.json`.
-
-## Simplified files
-
-Also in the `final` directory is a directory called `simpl`. This has .geojson files with simplified polygons for mapping on the web. These are used in NPR's web maps and were simplified using [mapshaper](https://github.com/mbloch/mapshaper).
-
-
 ## Instructions To Reproduce Analysis
 
 - `virtualenv heat-income`
@@ -31,12 +27,23 @@ Also in the `final` directory is a directory called `simpl`. This has .geojson f
 - `pip install -r requirements.txt`
 - Set your Census API key as an environment variable in `bin/activate`
 - Download the manual images as GEOTIFFs (specified in `download_data.py`) from EarthExplorer
-- `.sh mkfile.sh` (this will take a long time)
+- `sh mkfile.sh` (this will take a long time)
 
-<b>Added:</b> Python script to reproduce maps, similar to those show in the NPR article.
-- `python heat-income-maps.py`
+**Added: Python script as part of `mkfile.sh` to create maps, similar to those shown in the NPR article, as well as additional maps for the City of Charlottesville and Albemarle County, Virginia.**
 
-## Caveats
+## Data files
+
+Completed data files for each city are saved as .geojson files in `data/output/analysis_out/final/`.
+
+Correlations for each city are listed in `good_images_w_r.json`.
+
+**Added: Maps for each city are saved as PDFs in `data/output/analysis_out/final/plots/`.**
+
+### Simplified files
+
+Also in the `final` directory is a directory called `simpl`. This has .geojson files with simplified polygons for mapping on the web. These are used in NPR's web maps and were simplified using [mapshaper](https://github.com/mbloch/mapshaper).
+
+### Caveats
 - There is a difference between poverty vs. low-income
 - More detailed Census geography = larger margins of error
 - We're using surface temperature, not ambient temperature
