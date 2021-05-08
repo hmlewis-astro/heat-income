@@ -6,7 +6,7 @@ _Updated code by Hannah Lewis_
 
 **With the addition of these two regions, I've also opted to use block group-level data from the U.S. Census, rather than tract-level data, since population statistics tend to vary widely across tracts in these particular areas.**
 
-**For the City of Charlottesville, there is a strong negative correlation between heat and income (i.e., as heat increases in a block group, median household income decreases), whereas in Albemarle County, there is no correlation observed. In both the City of Charlottesville and Albemarle County there is a moderately positive correlation between heat and percent population of color (i.e., as heat increases in a block group, the percentage of the population made up by people of color also increases), as illustrated here:**
+**For the City of Charlottesville, there is a strong negative correlation between heat and income (i.e., as heat increases in a block group, median household income decreases), whereas in Albemarle County, there is no correlation observed. In both the City of Charlottesville and Albemarle County there are moderate positive correlations between heat and percent population of color (i.e., as heat increases in a block group, the percentage of the population made up by people of color also increases), as illustrated here:**
 ![Charlottesville Albemarle map](https://github.com/hmlewis-astro/heat-income/blob/master/data/output/analysis_out/final/plots/charlottesville_albemarle_stitch.png)
 
 _Original code by Sean McMinn and Nick Underwood; additional reporting by Meg Anderson and Nora Eckert_
