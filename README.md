@@ -26,8 +26,13 @@ The satellite data measures temperature at a surface, like the ground or a rooft
 - `. bin/activate`
 - `pip install -r requirements.txt`
 - Set your Census API key as an environment variable in `bin/activate`
-- Download the manual images as GEOTIFFs (specified in `download_data.py`) from EarthExplorer
-- `sh mkfile.sh` (this will take a long time)
+- Images not previously downloaded, should be downloaded manually from EarthExplorer. **This repository already includes GEOTIFFs for most cities (based on list of approved images in `good_images.json`). Images are stored in `data/output/images/state-city`.**
+- `sh mkfile.sh`
+	- Details on each process in `sh mkfile.sh`:
+		- `. bin/activate`
+		- `sh download_water.sh` -- downloads a 10m raster of oceans and US bodies of water
+		- `python download_data.py` -- downloads US Census block group shapefiles and income, race, and population data within each block group, merges block group shapefile and data, and downloads satellite images (if they aren't already available locally)
+		- `sh parallel_process.sh` -- 
 
 **Added: Python script as part of `mkfile.sh` to create maps, similar to those shown in the NPR article, as well as additional maps for the City of Charlottesville and Albemarle County, Virginia.**
 
@@ -35,7 +40,7 @@ The satellite data measures temperature at a surface, like the ground or a rooft
 
 Completed data files for each city are saved as .geojson files in `data/output/analysis_out/final/`.
 
-Correlations for each city are listed in `good_images_w_r.json`.
+Correlations for each city/county are listed in `good_images_w_r.json`.
 
 **Added: Maps for each city are saved as PDFs in `data/output/analysis_out/final/plots/`.**
 
@@ -44,10 +49,10 @@ Correlations for each city are listed in `good_images_w_r.json`.
 Also in the `final` directory is a directory called `simpl`. This has .geojson files with simplified polygons for mapping on the web. These are used in NPR's web maps and were simplified using [mapshaper](https://github.com/mbloch/mapshaper).
 
 ## Caveats
-- There is a difference between poverty vs. low-income
-- More detailed Census geography = larger margins of error
-- We're using surface temperature, not ambient temperature
-- Only one day of data per city
-- Not every city is counted
+- There is a difference between poverty and low-income.
+- More detailed Census geography yields larger margins of error.
+- Satellite imagery provide surface temperature, not ambient (air) temperature.
+- Results include analysis of only one day of data per city.
+- Not every US city is included.
 - Some cities split satellite scene paths/rows, so we took the image from the scene that contained most of the city. You'll need to filter out tracts without heat data in any data analysis/mapping you do.
 - For satellite images that are not defined manually, the script will grab recent images. As more scenes are captured by NASA, results may vary slightly and/or good_images may need to be redefined.
