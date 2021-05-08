@@ -30,9 +30,9 @@ The satellite data measures temperature at a surface, like the ground or a rooft
 - `sh mkfile.sh`
 	- Details on each process in `sh mkfile.sh`:
 		- `. bin/activate`
-		- `sh download_water.sh` -- downloads a 10m raster of oceans and US bodies of water
-		- `python download_data.py` -- downloads US Census block group shapefiles and income, race, and population data within each block group, merges block group shapefile and data, and downloads satellite images (if they aren't already available locally)
-		- `sh parallel_process.sh` -- 
+		- `sh download_water.sh` &mdash; downloads a 10m raster of oceans and US bodies of water
+		- `python download_data.py` &mdash; downloads US Census block group shapefiles and income, race, and population data within each block group, merges block group shapefile and data, and downloads satellite images (if they aren't already available locally)
+		- `sh parallel_process.sh` &mdash; 
 
 **Added: Python script as part of `mkfile.sh` to create maps, similar to those shown in the NPR article, as well as additional maps for the City of Charlottesville and Albemarle County, Virginia.**
 
