@@ -35,7 +35,7 @@ The satellite data measures temperature at a surface, like the ground or a rooft
 		- `sh parallel_process.sh` &mdash; runs geoanalysis (`single_process.sh`) on each city in parallel and calculates correlation statistics (median household income vs. surface temperature, percent population of color vs. surface temperature)
 			- `sh single_process.sh` &mdash; removes oceans and bodies of water, calculates zonalstats (median spectral radiance in block group), converts spectral radiance to degrees Kelvin, calculates correlation statistics, and produces simplified output for mapping on the web
 		- `python heat-income-maps.py` &mdash; creates median household income, surface temperature, and percent population of color maps for each city, maps saved in `data/output/analysis_out/final/plots/`
-		- `python heat-income-maps_Cville.py` &mdash; creates more detailed maps (including landmarks) for the City of Charlottesville and Albemarle County, VA
+		- `python heat-income-maps_Cville.py` &mdash; creates more detailed maps (including landmarks) for the City of Charlottesville and Albemarle County, Virginia
 
 **Added: Python script as part of `mkfile.sh` to create maps, similar to those shown in the NPR article, as well as additional maps for the City of Charlottesville and Albemarle County, Virginia.**
 
