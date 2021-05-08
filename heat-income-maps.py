@@ -29,7 +29,69 @@ def plot_grad(df_param, cmap, ax):
     for x, y, c in zip(Xpairs, Ypairs, C):
         ax.plot(x, y, c=cmap(c), linewidth=20.0)
         
+def proc_map_files(map_file):
+	df = gpd.read_file(map_file)
+	df['median'] = df['median'].astype(np.float64) # Median temp in census tract
+	df['median_hou'] = df['median_hou'].astype(np.float64) # Median household income in census tract
+	df['total_popu'] = df['total_popu'].astype(np.float64) # Total population in census tract
+	df['white_popu'] = df['white_popu'].astype(np.float64) # White population in census tract
+	df[df['median_hou'] < 0] = np.nan
+	df['nonwhite_popu'] = 1.0-(df['white_popu']/df['total_popu'])
+	
+	return df
+        
+def plot_map_income(df, ax0, ax1):
+	df.plot(column=df['median_hou'],
+				cmap='Greens',
+				ax=ax0)
+	ax0.axis('off')
+	ax0.set_title('Median Household Income', fontsize=24)
 
+    # Colorbar and labels
+	plot_grad(df['median_hou'], 'Greens', ax1)
+	ax1.axis('off')
+	ax1.text(np.min(df['median_hou']),0.75,
+				 'Minimum\n\${0:.0f}K'.format(np.min(df['median_hou'])/1000.0),
+				 ha='center', fontsize=18)
+	ax1.text(np.max(df['median_hou']),0.75,
+				 'Maximum\n\${0:.0f}K'.format(np.max(df['median_hou'])/1000.0),
+				 ha='center', fontsize=18)
+
+def plot_map_temp(df, ax0, ax1):
+	df.plot(column=df['median'],
+                cmap='Spectral_r',
+                ax=ax0)
+	ax0.axis('off')
+	ax0.set_title('Surface Temperature', fontsize=24)
+
+    # Colorbar and labels
+	plot_grad(df['median'], 'Spectral_r', ax1)
+	ax1.axis('off')
+	ax1.text(np.min(df['median']),0.75,
+				 '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df['median'])-np.mean(df['median'])),
+				 ha='center', fontsize=18)
+	ax1.text(np.max(df['median']),0.75,
+				 '{0:.1f}$^\circ$\nabove avg.'.format(np.max(df['median'])-np.mean(df['median'])),
+				 ha='center', fontsize=18)
+		
+def plot_map_popstats(df, ax0, ax1):
+	vmax = round(np.max(df['nonwhite_popu']),1)
+	df.plot(column=df['nonwhite_popu'],
+				cmap='Blues', vmin=0.0, vmax=vmax,
+				ax=ax[0,2])
+	ax0.axis('off')
+	ax0.set_title('Percent Population of Color', fontsize=24)
+
+    # Colorbar and labels
+	plot_grad(df['nonwhite_popu'], 'Blues', ax1)
+	ax1.axis('off')
+	ax1.text(np.min(df['nonwhite_popu']),0.775,
+				 '0%',
+				 ha='center', fontsize=18)
+	ax1.text(np.max(df['nonwhite_popu']),0.775,
+				 '{:.0f}%'.format(vmax*100),
+				 ha='center', fontsize=18)
+				 
 maps_path = path + '/data/output/analysis_out/final/'
 plot_path = path + '/data/output/analysis_out/final/plots/'
 file_extn = '.geojson'
@@ -39,76 +101,26 @@ assert os.path.exists(maps_path), "Directory containing the final .geojson files
 if not os.path.exists(plot_path):
     os.makedirs(plot_path)
     
-
 map_files = glob.glob(maps_path + '/*' + file_extn)
 
 for m in map_files:
     # Get map data
-    df_map = gpd.read_file(m)
-
-    # Format data of interest
-    df_map['median'] = df_map['median'].astype(np.float64) # Median temp in census tract
-    df_map['median_hou'] = df_map['median_hou'].astype(np.float64) # Median household income in census tract
-    df_map['total_popu'] = df_map['total_popu'].astype(np.float64) # Total population in census tract
-    df_map['white_popu'] = df_map['white_popu'].astype(np.float64) # White population in census tract
-    df_map[df_map['median_hou'] < 0] = np.nan
-    df_map['nonwhite_popu'] = 1.0-(df_map['white_popu']/df_map['total_popu'])
+    df_map = proc_map_files(m)
     
     # Make plot
     fig, ax = plt.subplots(2,3, figsize=(20,10), gridspec_kw={'height_ratios': [20,1]})
 
+	# Plot household income
+    plot_map_income(df_map, ax[0,0], ax[1,0])
+
     #Plot median temp
-    df_map.plot(column=df_map['median'],
-                cmap='Reds',
-                ax=ax[0,0])
-    ax[0,0].axis('off')
-    ax[0,0].set_title('Surface Temperature', fontsize=24)
+    plot_map_temp(df_map, ax[0,1], ax[1,1])
 
-    # Colorbar and labels
-    plot_grad(df_map['median'], 'Reds', ax[1,0])
-    ax[1,0].axis('off')
-    ax[1,0].text(np.min(df_map['median']),0.75,
-				 '{0:.1f}$^\circ$\nbelow avg.'.format(np.min(df_map['median'])-np.mean(df_map['median'])),
-				 ha='center', fontsize=18)
-    ax[1,0].text(np.max(df_map['median']),0.75,
-				 '{0:.1f}$^\circ$\nabove avg.'.format(np.max(df_map['median'])-np.mean(df_map['median'])),
-				 ha='center', fontsize=18)
-
-    # Plot household income
-    df_map.plot(column=df_map['median_hou'],
-				cmap='Greens',
-				ax=ax[0,1])
-    ax[0,1].axis('off')
-    ax[0,1].set_title('Income', fontsize=24)
-
-    # Colorbar and labels
-    plot_grad(df_map['median_hou'], 'Greens', ax[1,1])
-    ax[1,1].axis('off')
-    ax[1,1].text(np.min(df_map['median_hou']),0.75,
-				 'Minimum\n\${0:.0f}K'.format(np.min(df_map['median_hou'])/1000.0),
-				 ha='center', fontsize=18)
-    ax[1,1].text(np.max(df_map['median_hou']),0.75,
-				 'Maximum\n\${0:.0f}K'.format(np.max(df_map['median_hou'])/1000.0),
-				 ha='center', fontsize=18)
-
-    # Plot fraction of population
-    vmax = round(np.max(df_map['nonwhite_popu']),1)
-    df_map.plot(column=df_map['nonwhite_popu'],
-				cmap='Blues', vmin=0.0, vmax=vmax,
-				ax=ax[0,2])
-    ax[0,2].axis('off')
-    ax[0,2].set_title('Percent Non-White Population', fontsize=24)
-
-    # Colorbar and labels
-    plot_grad(df_map['nonwhite_popu'], 'Blues', ax[1,2])
-    ax[1,2].axis('off')
-    ax[1,2].text(np.min(df_map['nonwhite_popu']),0.775,
-				 '0%',
-				 ha='center', fontsize=18)
-    ax[1,2].text(np.max(df_map['nonwhite_popu']),0.775,
-				 '{:.0f}%'.format(vmax*100),
-				 ha='center', fontsize=18)
+    # Plot population stats
+    plot_map_popstats(df_map, ax[0,2], ax[1,2])
     
+    fig.subplots_adjust(hspace=0, wspace=0.15)
+        
     # Save figure
     plt.savefig(plot_path + '/' + m[len(maps_path):-len(file_extn)] + '.pdf', dpi=300)
     print('Plot for {} done!'.format(m[len(maps_path):-len(file_extn)]))
