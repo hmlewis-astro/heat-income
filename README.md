@@ -32,7 +32,9 @@ The satellite data measures temperature at a surface, like the ground or a rooft
 		- `. bin/activate`
 		- `sh download_water.sh` &mdash; downloads a 10m raster of oceans and US bodies of water
 		- `python download_data.py` &mdash; downloads US Census block group shapefiles and income, race, and population data within each block group, merges block group shapefile and data, and downloads satellite images (if they aren't already available locally)
-		- `sh parallel_process.sh` &mdash; 
+		- `sh parallel_process.sh` &mdash; runs geoanalysis (`single_process.sh`) on each city in parallel and calculates correlation statistics (median household income vs. surface temperature, percent population of color vs. surface temperature)
+			- `sh single_process.sh` &mdash; removes oceans and bodies of water, calculates zonalstats (median spectral radiance in block group), converts spectral radiance to degrees Kelvin, calculates correlation statistics, and produces simplified output for mapping on the web
+		- `python heat-income-maps.py` &mdash; 
 
 **Added: Python script as part of `mkfile.sh` to create maps, similar to those shown in the NPR article, as well as additional maps for the City of Charlottesville and Albemarle County, Virginia.**
 
