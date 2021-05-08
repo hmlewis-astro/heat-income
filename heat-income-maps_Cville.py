@@ -54,7 +54,7 @@ def zoom_effect_box(source, dest, roi, color='k', linewidth=1.25, roiKwargs={}, 
     ax2: matplotlib.axes
         Destination axis in which the zoomed chart will be plotted
     roi: list
-        Region Of Interest is a rectangle defined by [xmin, ymin, xmax, ymax],
+        Region Of Interest is a rectangle, [xmin, ymin, xmax, ymax],
         all coordinates are expressed in the coordinate system of data
     roiKwargs: dict (optional)
         Properties for matplotlib.patches.Rectangle given by keywords
@@ -176,6 +176,24 @@ def plot_map_popstats(df, ax0, ax1):
 	ax1.text(np.max(df['nonwhite_popu']),0.775,
 				 '{:.0f}%'.format(vmax*100),
 				 ha='center', fontsize=18)
+				 
+def major_x_formatter(x, pos):
+    return '{0:.1f}$^\circ$'.format(x)
+    
+def major_income_formatter(x, pos):
+    return '\${0:.0f}K'.format(x/1000.0)
+    
+def major_popu_formatter(x, pos):
+    return '{:.0f}%'.format(x*100.0)
+    
+def ols_fit(X, y):
+	mask = ~np.isnan(X) & ~np.isnan(y)
+	X = np.asarray(X[mask]).reshape(-1, 1)
+	y = np.asarray(y[mask])
+	reg_income = LinearRegression().fit(X, y)
+	score = reg_income.score(X, y)
+	
+	return reg_income.coef_[0], reg_income.intercept_, score
 
 maps_path = path + '/data/output/analysis_out/final/'
 plot_path = path + '/data/output/analysis_out/final/plots/'
@@ -289,6 +307,7 @@ plt.close()
 fig, ax = plt.subplots(1,2, figsize=(20,7), sharex=True)
 
 cmap = plt.get_cmap('Spectral_r')
+
 #Plot median temp vs. income
 ax[0].scatter(df_map_albemr['median']-np.mean(df_map_albemr['median']), df_map_albemr['median_hou'], color=cmap(0.8), marker='^', s=100, label='Albemarle Co block groups')
 ax[0].scatter(df_map_cville['median']-np.mean(df_map_total['median']), df_map_cville['median_hou'], color=cmap(0.1), s=100, label='City of Cville block groups')
@@ -297,28 +316,24 @@ plot_x = np.arange(-12,12)
 
 X_albemr = (df_map_albemr['median']-np.mean(df_map_total['median']))
 y_albemr = df_map_albemr['median_hou']
-mask = ~np.isnan(X_albemr) & ~np.isnan(y_albemr)
-X_albemr = np.asarray(X_albemr[mask]).reshape(-1, 1)
-y_albemr = np.asarray(y_albemr[mask])
-reg_income_albemr = LinearRegression().fit(X_albemr, y_albemr)
-ax[0].plot(plot_x, reg_income_albemr.intercept_ + reg_income_albemr.coef_[0]*plot_x, color=cmap(0.75), ls=':', lw=3.0)
+slope_albemr, intcpt_albemr, score_albemr = ols_fit(X_albemr, y_albemr)
+ax[0].plot(plot_x, intcpt_albemr + slope_albemr*plot_x, color=cmap(0.75), ls=':', lw=3.0)
+
 print('\n')
-print('In Albemarle Co, for an increase of 1 degree in surface temperature, we see a{0} {1} of ${2:.0f} in median income.'.format('n' if reg_income_albemr.coef_[0] > 0.0 else '','increase' if reg_income_albemr.coef_[0] > 0.0 else 'decrease', np.abs(reg_income_albemr.coef_[0])))
-factor = 1 if reg_income_albemr.coef_[0] > 0.0 else -1
-print('R score = {:.3f}'.format(factor*np.sqrt(reg_income_albemr.score(X_albemr, y_albemr))))
+print('In Albemarle Co, for an increase of 1 degree in surface temperature, we see a{0} {1} of ${2:.0f} in median income.'.format('n' if slope_albemr > 0.0 else '','increase' if slope_albemr > 0.0 else 'decrease', np.abs(slope_albemr)))
+factor = 1 if slope_albemr > 0.0 else -1
+print('R score = {:.3f}'.format(factor*np.sqrt(score_albemr)))
 print('\n')
 
 X_cville = (df_map_cville['median']-np.mean(df_map_total['median']))
 y_cville = df_map_cville['median_hou']
-mask = ~np.isnan(X_cville) & ~np.isnan(y_cville)
-X_cville = np.asarray(X_cville[mask]).reshape(-1, 1)
-y_cville = np.asarray(y_cville[mask])
-reg_income_cville = LinearRegression().fit(X_cville, y_cville)
-ax[0].plot(plot_x, reg_income_cville.intercept_ + reg_income_cville.coef_[0]*plot_x, color=cmap(0.05), ls='--', lw=3.0)
+slope_cville, intcpt_cville, score_cville = ols_fit(X_cville, y_cville)
+ax[0].plot(plot_x, intcpt_cville + slope_cville*plot_x, color=cmap(0.05), ls='--', lw=3.0)
+
 print('\n')
-print('In the City of Cville, for an increase of 1 degree in surface temperature, we see a{0} {1} of ${2:.0f} in median income.'.format('n' if reg_income_cville.coef_[0] > 0.0 else '','increase' if reg_income_cville.coef_[0] > 0.0 else 'decrease', np.abs(reg_income_cville.coef_[0])))
-factor = 1 if reg_income_cville.coef_[0] > 0.0 else -1
-print('R score = {:.3f}'.format(factor*np.sqrt(reg_income_cville.score(X_cville, y_cville))))
+print('In the City of Cville, for an increase of 1 degree in surface temperature, we see a{0} {1} of ${2:.0f} in median income.'.format('n' if slope_cville > 0.0 else '','increase' if slope_cville > 0.0 else 'decrease', np.abs(slope_cville)))
+factor = 1 if slope_cville > 0.0 else -1
+print('R score = {:.3f}'.format(factor*np.sqrt(score_cville)))
 print('\n')
 
 ax[0].set_xlabel('Surface Temperature', fontsize=24)
@@ -332,44 +347,33 @@ ax[1].scatter(df_map_cville['median']-np.mean(df_map_total['median']), df_map_cv
 
 X_albemr = (df_map_albemr['median']-np.mean(df_map_total['median']))
 y_albemr = df_map_albemr['nonwhite_popu']
-mask = ~np.isnan(X_albemr) & ~np.isnan(y_albemr)
-X_albemr = np.asarray(X_albemr[mask]).reshape(-1, 1)
-y_albemr = np.asarray(y_albemr[mask])
-reg_popu_albemr = LinearRegression().fit(X_albemr, y_albemr)
-ax[1].plot(plot_x, reg_popu_albemr.intercept_ + reg_popu_albemr.coef_[0]*plot_x, color=cmap(0.75), ls=':', lw=3.0)
+slope_albemr, intcpt_albemr, score_albemr = ols_fit(X_albemr, y_albemr)
+ax[1].plot(plot_x, intcpt_albemr + slope_albemr*plot_x, color=cmap(0.75), ls=':', lw=3.0)
+
 print('\n')
-print('In Albemarle Co, for an increase of 1 degree in surface temperature, we see a{0} {1} of {2:.0f}% in percent population of color.'.format('n' if reg_popu_albemr.coef_[0] > 0.0 else '','increase' if reg_popu_albemr.coef_[0] > 0.0 else 'decrease', np.abs(reg_popu_albemr.coef_[0])*100))
-factor = 1 if reg_popu_albemr.coef_[0] > 0.0 else -1
-print('R score = {:.3f}'.format(factor*np.sqrt(reg_popu_albemr.score(X_albemr, y_albemr))))
+print('In Albemarle Co, for an increase of 1 degree in surface temperature, we see a{0} {1} of {2:.0f}% in percent population of color.'.format('n' if slope_albemr > 0.0 else '','increase' if slope_albemr > 0.0 else 'decrease', np.abs(slope_albemr)*100))
+factor = 1 if slope_albemr > 0.0 else -1
+print('R score = {:.3f}'.format(factor*np.sqrt(score_albemr)))
 print('\n')
 
 X_cville = (df_map_cville['median']-np.mean(df_map_total['median']))
 y_cville = df_map_cville['nonwhite_popu']
-mask = ~np.isnan(X_cville) & ~np.isnan(y_cville)
-X_cville = np.asarray(X_cville[mask]).reshape(-1, 1)
-y_cville = np.asarray(y_cville[mask])
-reg_popu_cville = LinearRegression().fit(X_cville, y_cville)
-ax[1].plot(plot_x, reg_popu_cville.intercept_ + reg_popu_cville.coef_[0]*plot_x, color=cmap(0.05), ls='--', lw=3.0)
+slope_cville, intcpt_cville, score_cville = ols_fit(X_cville, y_cville)
+ax[1].plot(plot_x, intcpt_cville + slope_cville*plot_x, color=cmap(0.05), ls='--', lw=3.0)
+
 print('\n')
-print('In the City of Cville, for an increase of 1 degree in surface temperature, we see a{0} {1} of {2:.0f}% in percent population of color.'.format('n' if reg_popu_cville.coef_[0] > 0.0 else '','increase' if reg_popu_cville.coef_[0] > 0.0 else 'decrease', np.abs(reg_popu_cville.coef_[0])*100))
-factor = 1 if reg_popu_cville.coef_[0] > 0.0 else -1
-print('R score = {:.3f}'.format(factor*np.sqrt(reg_popu_cville.score(X_cville, y_cville))))
+print('In the City of Cville, for an increase of 1 degree in surface temperature, we see a{0} {1} of {2:.0f}% in percent population of color.'.format('n' if slope_cville > 0.0 else '','increase' if slope_cville > 0.0 else 'decrease', np.abs(slope_cville)*100))
+factor = 1 if slope_cville > 0.0 else -1
+print('R score = {:.3f}'.format(factor*np.sqrt(score_cville)))
 print('\n')
 
 ax[0].set_xlim(math.floor(np.min(df_map_total['median'])-np.mean(df_map_total['median'])-2.0), math.ceil(np.max(df_map_total['median'])-np.mean(df_map_total['median'])+2.5))
 ax[0].set_ylim(-5000, math.ceil(np.max(df_map_total['median_hou'])+20000))
 ax[1].set_ylim(-0.05, round(np.max(df_map_total['nonwhite_popu'])+0.1,1))
 
-def major_x_formatter(x, pos):
-    return '{0:.1f}$^\circ$'.format(x)
 ax[0].xaxis.set_major_formatter(plt.FuncFormatter(major_x_formatter))
 
-def major_income_formatter(x, pos):
-    return '\${0:.0f}K'.format(x/1000.0)
 ax[0].yaxis.set_major_formatter(plt.FuncFormatter(major_income_formatter))
-
-def major_popu_formatter(x, pos):
-    return '{:.0f}%'.format(x*100.0)
 ax[1].yaxis.set_major_formatter(plt.FuncFormatter(major_popu_formatter))
 
 ax[0].set_aspect(1.0/ax[0].get_data_ratio(), adjustable='box')
