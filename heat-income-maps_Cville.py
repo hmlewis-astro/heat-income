@@ -102,7 +102,7 @@ def zoom_effect_box(source, dest, roi, color='k', linewidth=1.25, roiKwargs={}, 
 
 def proc_map_files(map_file):
 	df = gpd.read_file(map_file)
-	df['median'] = df['median'].astype(np.float64) # Median temp in census tract
+	df['median'] = (df['median'].astype(np.float64) - 275.15)*(9.0/5.0) + 32.0 # Median temp in census tract
 	df['median_hou'] = df['median_hou'].astype(np.float64) # Median household income in census tract
 	df['total_popu'] = df['total_popu'].astype(np.float64) # Total population in census tract
 	df['white_popu'] = df['white_popu'].astype(np.float64) # White population in census tract
@@ -312,7 +312,7 @@ cmap = plt.get_cmap('Spectral_r')
 ax[0].scatter(df_map_albemr['median']-np.mean(df_map_albemr['median']), df_map_albemr['median_hou'], color=cmap(0.8), marker='^', s=100, label='Albemarle Co block groups')
 ax[0].scatter(df_map_cville['median']-np.mean(df_map_total['median']), df_map_cville['median_hou'], color=cmap(0.1), s=100, label='City of Cville block groups')
 
-plot_x = np.arange(-12,12)
+plot_x = np.arange(-20,20)
 
 X_albemr = (df_map_albemr['median']-np.mean(df_map_total['median']))
 y_albemr = df_map_albemr['median_hou']
